@@ -1,26 +1,38 @@
 <?php
     include 'configure.php';
+    
     error_reporting(0);
     if(isset($_POST['submit'])){
+        
         $username = $_POST['username'];
         $email = $_POST['email'];
         $password = sha1($_POST['password']);
         $confirm_password = sha1($_POST['confirm_password']);
+        session_start();
+        
+        $_SESSION['username'] = $username;
+        $_SESSION['email'] = $email;
         
         if($password == $confirm_password){
-            $sql = "insert into users (username, email, password) values ('$username', '$email', '$password')";
+            $sql = "select * from users where username = '$username'";
             $res = mysqli_query($conn, $sql);
-            if($res){
-                echo "<script>alert('Congratulations $username! Your registration was successful!')</script>";
-                $username = "";
-                $email = "";
-                $_POST['password'] = "";
-                $_POST['confirm_password'] = "";
-               
+            if(mysqli_num_rows($res)>0){
+                echo "<script>alert('User Name $username already exists! Please enter a new user name')</script>";    
             }
             else{
-                echo "<script>alert('Something went wrong')</script>";
+                $sql = "insert into users (username, email, password) values ('$username', '$email', '$password')";
+                $res = mysqli_query($conn, $sql);
+                if($res){
+                    header('Location: welcome.php'); /* Redirect browser */
+                    exit();
+                    
+                    
+                }
+                else{
+                    echo "<script>alert('Something went wrong')</script>";
+                }
             }
+            
         }
         else{
             echo "<script>alert('Passwords do NOT match!')</script>";
@@ -48,7 +60,7 @@
             <div class="illustration"><i class="icon ion-ios-locked-outline"></i></div>
             <div class="form-group"><input class="form-control" type="text" name="username" placeholder="User Name" value="<?php echo $username?>" required></div>
             <div class="form-group"><input class="form-control" type="email" name="email" placeholder="Email" value="<?php echo $email?>"></div>
-            <div class="form-group"><input class="form-control" type="password" name="password" placeholder="Password" value="<?php echo $_POST['confirm_password']?>"></div>
+            <div class="form-group"><input class="form-control" type="password" name="password" placeholder="Password" value="<?php echo $_POST['password']?>"></div>
             <div class="form-group"><input class="form-control" type="password" name="confirm_password" placeholder="Confirm Password"   value="<?php echo $_POST['confirm_password']?>"></div>
             <div class="form-group"><button class="btn btn-primary btn-block" type="submit" name="submit">Register</button></div>
             <a href="login.php" class="noaccount">Already have an account? Login</a></form>
